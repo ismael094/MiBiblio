@@ -27,6 +27,12 @@ public class ReservasFacade {
         em.getEntityManagerFactory().getCache().evictAll();
     }
     
+    public List<Reservas> findActiveReserva(){
+        em.getEntityManagerFactory().getCache().evictAll();
+        TypedQuery<Reservas> query =  em.createNamedQuery("Reservas.findByEstado", Reservas.class).setParameter("estado","E");
+        return query.getResultList();
+    }
+    
     public List<Reservas> findReservas(Usuarios user){
         em.getEntityManagerFactory().getCache().evictAll();
         TypedQuery<Reservas> query =  em.createNamedQuery("Reservas.findByUsuario", Reservas.class).setParameter("usuario",user);

@@ -44,6 +44,11 @@ import javax.xml.bind.annotation.XmlTransient;
     , @NamedQuery(name = "Libros.findByPublisher", query = "SELECT l FROM Libros l WHERE l.publisher = :publisher")})
 public class Libros implements Serializable {
 
+    @Column(name = "publish_year")
+    private Integer publishYear;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "idLibro")
+    private transient Collection<Compras> comprasCollection;
+
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -69,9 +74,6 @@ public class Libros implements Serializable {
     @Size(min = 1, max = 20)
     @Column(name = "oclc")
     private String oclc;
-    @Basic(optional = false)
-    @Column(name = "publish_year")
-    private int publishYear;
     @Basic(optional = false)
     @Size(min = 1, max = 255)
     @Column(name = "subject")
@@ -212,6 +214,19 @@ public class Libros implements Serializable {
     @Override
     public String toString() {
         return "database.Libros[ id=" + id + " ]";
+    }
+
+    public void setPublishYear(Integer publishYear) {
+        this.publishYear = publishYear;
+    }
+
+    @XmlTransient
+    public Collection<Compras> getComprasCollection() {
+        return comprasCollection;
+    }
+
+    public void setComprasCollection(Collection<Compras> comprasCollection) {
+        this.comprasCollection = comprasCollection;
     }
     
 }

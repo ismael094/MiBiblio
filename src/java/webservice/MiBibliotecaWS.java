@@ -6,14 +6,11 @@
 package webservice;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import database.Compras;
 import database.Libros;
 import database.Reservas;
 import database.Usuarios;
-import java.lang.ProcessBuilder.Redirect.Type;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.ejb.EJB;
@@ -25,6 +22,7 @@ import static md5.MD5.getMD5;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import proveedorcliente.ProveedorWS_Service;
+import service.ComprasFacade;
 //import proveedorclient.ProveedorWS_Service;
 import service.LibrosFacade;
 import service.ReservasFacade;
@@ -46,6 +44,8 @@ public class MiBibliotecaWS {
     LibrosFacade libros;
     @EJB
     ReservasFacade reservas;
+    @EJB
+    ComprasFacade compras;
     
     @WebMethod(operationName = "login")
     public boolean login(@WebParam(name = "usuario") String usuario, @WebParam(name = "pass") String pass) {
@@ -104,6 +104,7 @@ public class MiBibliotecaWS {
         return g.toJson(reservasList);
     }
     
+    
     @WebMethod(operationName = "penalizaciones")
     public String penalizaciones(@WebParam(name = "usuario") String usuario) {
         Usuarios user = usuarios.findUser(usuario);
@@ -113,6 +114,13 @@ public class MiBibliotecaWS {
         /*for (Reservas r : reservasList) {
             res+=g.toJson(r)+",";
         }*/
+        return g.toJson(reservasList);
+    }
+    
+    @WebMethod(operationName = "reservasActivas")
+    public String reservasActivas() {
+        List<Reservas> reservasList = reservas.findActiveReserva();
+        Gson g = new Gson();
         return g.toJson(reservasList);
     }
     
@@ -139,24 +147,36 @@ public class MiBibliotecaWS {
     public boolean comprar(@WebParam(name = "isbn") java.lang.String isbn, @WebParam(name = "cantidad") int cantidad) {
         proveedorcliente.ProveedorWS port = service.getProveedorWSPort();
         String book = port.comprar(isbn, cantidad);
-        Libros l = libros.findBook(isbn);
-        System.out.println(1+book);
         if (book.length() > 0) {
+            Libros l = libros.findBook(isbn);
             JSONObject obj = new JSONObject(book);
             JSONArray rest = obj.getJSONArray("books");
             Gson g = new Gson();
             Libros libroEntity = g.fromJson(rest.getJSONObject(0).toString(), Libros.class);
-            System.out.println(rest.getJSONObject(0).toString());
             if (l == null) {
                 libroEntity.setStock(cantidad);
+                
                 libros.create(libroEntity);
+                Libros libroDB = libros.findBook(libroEntity.getIsbn());
+                System.out.println(libroDB);
+                Compras compra = new Compras();
+                compra.setIdLibro(libroDB);
+                compra.setCantidad(cantidad);
+                compras.create(compra);
+                
             } else {
                 l.setStock(l.getStock()+cantidad);
                 libros.update(l);
             }
-            
             return true;
         }
         return false;
+    }
+    
+    @WebMethod(operationName = "compras")
+    public String compras() {
+        List<Compras> comprasList = compras.getCompras();
+        Gson g = new Gson();
+        return g.toJson(comprasList);
     }
 }
