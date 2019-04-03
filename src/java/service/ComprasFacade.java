@@ -6,14 +6,11 @@
 package service;
 
 import database.Compras;
-import database.Libros;
-import database.Reservas;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
-import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 
 /**
@@ -26,7 +23,8 @@ public class ComprasFacade {
     private EntityManager em;   
         
     public List<Compras> getCompras(){
-        TypedQuery<Compras> query =  em.createNamedQuery("Compras.findAll", Compras.class);
+        em.getEntityManagerFactory().getCache().evictAll();
+        TypedQuery<Compras> query =  em.createNamedQuery("Compras.find", Compras.class);
         List<Compras> lista = query.getResultList();
         if (lista == null || lista.isEmpty())
             return null;
@@ -35,9 +33,7 @@ public class ComprasFacade {
     
     public void create(Compras compra) {
         try {
-            em.getEntityManagerFactory().getCache().evictAll();
             em.persist(compra);
-            em.flush();
             em.getEntityManagerFactory().getCache().evictAll();
         } catch (ConstraintViolationException e) {
             ;

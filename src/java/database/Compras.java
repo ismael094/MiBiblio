@@ -30,6 +30,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 @NamedQueries({
     @NamedQuery(name = "Compras.findAll", query = "SELECT c FROM Compras c")
     , @NamedQuery(name = "Compras.findById", query = "SELECT c FROM Compras c WHERE c.id = :id")
+    , @NamedQuery(name = "Compras.find", query = "SELECT c FROM Compras c WHERE c.id like \"%_%\"")
     , @NamedQuery(name = "Compras.findByCantidad", query = "SELECT c FROM Compras c WHERE c.cantidad = :cantidad")})
 public class Compras implements Serializable {
 

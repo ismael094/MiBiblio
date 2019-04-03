@@ -10,6 +10,7 @@ import database.Compras;
 import database.Libros;
 import database.Reservas;
 import database.Usuarios;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -125,15 +126,17 @@ public class MiBibliotecaWS {
     }
     
     @WebMethod(operationName = "devolver")
-    public boolean devolver(@WebParam(name = "id") int id) {
+    public boolean devolver(@WebParam(name = "id") int id) throws ParseException {
         Reservas r = reservas.findById(id);
-        Date date = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Date date = sdf.parse(sdf.format(new Date()));
         int diff = date.compareTo(r.getFechaEntrega());
         if (diff > 0) {
             r.setFechaEntrega(date);
             r.setEstado("P");
             r.setPenalizacion(diff*3);
         } else {
+            r.setFechaEntrega(date);
             r.setEstado("D");
         }
         
